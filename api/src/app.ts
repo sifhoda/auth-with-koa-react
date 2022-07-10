@@ -10,6 +10,7 @@ import authRoutes from "./routes/auth";
 const app = new Koa();
 
 app.use(serve("./public"));
+app.use(serve("./views", { index: "index.html" }));
 
 //middleware pour la lecture du corps de la requête
 app.use(

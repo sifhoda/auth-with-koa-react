@@ -7,16 +7,18 @@ import { RouterContext } from "@koa/router";
 
 const mySecretToken = process.env.TOKEN || "secret_token";
 
-type Auth = {
+type Citoyens = {
 	id: number;
 	nom: string;
 	prenom: string;
 	etablissement: string;
 	email: string;
 	password: string;
+	email_valide: boolean;
+	compte_valide: boolean;
 };
 
-const db = new Database();
+const db = Database.getInstance();
 router.post("/auth/register", async (ctx: RouterContext) => {
 	try {
 		const validator = yup.object({
@@ -30,8 +32,8 @@ router.post("/auth/register", async (ctx: RouterContext) => {
 		const { email, password } = ctx.request.body;
 
 		const citoyen = await db
-			.query<Auth[]>(
-				"SELECT id,nom, prenom, password, etablissement FROM citoyens WHERE email = ?",
+			.query<Citoyens[]>(
+				"SELECT id,nom, prenom, password, etablissement, email_valide, compte_valide FROM citoyens WHERE email = ?",
 				[email]
 			)
 			.then((citoyens) => ({ ...citoyens[0] }))
@@ -39,16 +41,22 @@ router.post("/auth/register", async (ctx: RouterContext) => {
 				throw err;
 			});
 		if (citoyen && Object.keys(citoyen).length !== 0) {
+			console.log(citoyen);
+			if (!citoyen.email_valide || !citoyen.compte_valide) {
+				ctx.throw(403, "account not valid");
+			}
 			const result = decrypt(password, citoyen.password);
 			if (result) {
 				const payload = { sub: citoyen.id };
 				const token = sign(payload, mySecretToken);
 				ctx.body = {
-					id: citoyen.id,
-					nom: citoyen.nom,
-					prenom: citoyen.prenom,
-					etablissement: citoyen.etablissement,
-					token,
+					citoyen: {
+						id: citoyen.id,
+						nom: citoyen.nom,
+						prenom: citoyen.prenom,
+						etablissement: citoyen.etablissement,
+						token,
+					},
 				};
 			} else {
 				ctx.throw(401, wrongUserPassMsg);

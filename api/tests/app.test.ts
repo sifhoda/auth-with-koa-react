@@ -1,6 +1,7 @@
 import request from "supertest";
 import app from "../src/app";
 import { describe, expect, it } from "@jest/globals";
+
 describe("app routes test", () => {
 	it("Hello world works", async () => {
 		const response = await request(app.callback()).get("/");
@@ -20,5 +21,19 @@ describe("app routes test", () => {
 		expect(response.status).toBe(200);
 		const body = response.body.citoyen;
 		expect(body.prenom).toBe("Badon");
+	});
+	it("create a new citoyen", async () => {
+		const data = {
+			nom: "Maiga",
+			prenom: "Lewe",
+			etablissement: "High Tech",
+			email: "badra@test.ma",
+			// password: "2119",
+		};
+		const response = await request(app.callback())
+			.post(`/citoyen/`)
+			.send(data);
+
+		expect(response.status).toBe(200);
 	});
 });

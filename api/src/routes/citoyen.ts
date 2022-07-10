@@ -13,6 +13,8 @@ type Citoyens = {
 	email: string;
 	tel: string;
 	password: string;
+	email_valide: boolean;
+	compte_valide: boolean;
 };
 type InfoType = {
 	fieldCount: number;
@@ -26,7 +28,7 @@ type InfoType = {
 };
 
 //initialisation de la base de donnée
-const db = new Database();
+const db = Database.getInstance();
 
 db.query(`CREATE TABLE IF NOT EXISTS citoyens(
     id INT AUTO_INCREMENT,
@@ -46,9 +48,6 @@ db.query(`CREATE TABLE IF NOT EXISTS citoyens(
 )ENGINE=INNODB`);
 
 //Mis en place des routes de l'application
-router.get("/", async (ctx: RouterContext) => {
-	ctx.body = "Hello world";
-});
 
 router.get("/citoyen", async (ctx: RouterContext) => {
 	try {
@@ -194,7 +193,7 @@ router.put("/citoyen/:id", async (ctx: RouterContext) => {
 					args.password = hashedPassword;
 				}
 				await db.query(
-					"UPDATE citoyens SET nom=?, prenom=?, cne=?, email=?, tel=?, password=? WHERE id = ?",
+					"UPDATE citoyens SET nom=?, prenom=?, cne=?, email=?, tel=?, password=?WHERE id = ?",
 					[
 						args.nom,
 						args.prenom,
@@ -248,6 +247,26 @@ router.delete("/citoyen/:id", async (ctx: RouterContext) => {
 		} else {
 			ctx.throw(404, "Not found");
 		}
+	} catch (error) {
+		ctx.throw(500, `${error}`);
+	}
+});
+
+router.put("/citoyen/validation/:id", async (ctx: RouterContext) => {
+	try {
+		const id = ctx.params.id;
+		const validator = yup.number().required();
+		await validator.validate(id).catch((err) => {
+			throw err;
+		});
+		const args = {
+			...ctx.request.body,
+		};
+		await db.query(
+			"UPDATE citoyens SET email_valide=?, compte_valide=? WHERE id=?",
+			[args.email_valide, args.compte_valide, id]
+		);
+		ctx.status = 200;
 	} catch (error) {
 		ctx.throw(500, `${error}`);
 	}
