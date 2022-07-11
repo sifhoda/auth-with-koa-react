@@ -10,7 +10,13 @@ const etablissements = [
 	"EMSI",
 	"UPM",
 ];
-export const Login = ({ setToken }: { setToken: Function }) => {
+
+type LoginProps = {
+	setToken: Function;
+	toUrl?: "/" | "/dashboard" | "/account";
+};
+
+export const Login = ({ setToken, toUrl }: LoginProps) => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 
@@ -19,6 +25,8 @@ export const Login = ({ setToken }: { setToken: Function }) => {
 		err: false,
 		msg: "",
 	});
+	const navigate = useNavigate();
+
 	const emailChange = (event: ChangeEvent<HTMLInputElement>) => {
 		setError({
 			err: false,
@@ -58,6 +66,9 @@ export const Login = ({ setToken }: { setToken: Function }) => {
 		if (result.ok) {
 			const response = await result.json();
 			setToken(response.citoyen);
+			if (toUrl) {
+				navigate(toUrl);
+			}
 		} else {
 			const msg = await result.text();
 			setError({

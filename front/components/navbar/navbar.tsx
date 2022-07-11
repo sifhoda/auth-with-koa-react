@@ -2,22 +2,30 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./navbar.css";
 
-export const NavBar = () => {
+export const NavBar = ({
+	token,
+	setToken,
+}: {
+	token: string;
+	setToken: Function;
+}) => {
 	const [active, setActive] = useState(false);
 
 	const toogleNav = () => setActive(!active);
+
+	const logout = () => setToken({});
 	return (
 		<>
 			<nav>
-				<a
-					href="#"
+				<Link
+					to="/"
 					className="nav-icon"
 					aria-label="visiter la page d'accueil"
 					aria-current="page"
 				>
 					<img src="public/logo.svg" alt="app logo" />
 					<span>STE Maroconcept</span>
-				</a>
+				</Link>
 				<div className="main-navlinks">
 					<button
 						className={`hamburger ${active && "open"}`}
@@ -101,8 +109,13 @@ export const NavBar = () => {
 						<img src="public/user.svg" alt="" />
 					</a>
 					<div className="sign-btns">
-						<a href="#">Se Connecter</a>
-						<a href="#">S'inscrire</a>
+						{!token ? (
+							<Link to="/register">Se Connecter</Link>
+						) : (
+							<a href="#" onClick={logout}>
+								Se deconnecter
+							</a>
+						)}
 					</div>
 				</div>
 			</nav>
