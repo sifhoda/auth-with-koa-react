@@ -1,5 +1,3 @@
-import Router = require("@koa/router")
+import Router from "@koa/router";
 
-const router = new Router()
-
-export default router
+export default new Router();
